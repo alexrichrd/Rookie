@@ -1,0 +1,11 @@
+# object files and binaries
+game
+*.o
+*.out
+
+# Build directories
+build/
+dist/
+bin/
+obj/
+.vscode/
