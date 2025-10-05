@@ -1,19 +1,24 @@
 CXX = g++
 CXXFLAGS = -std=c++23 -Wall -Wextra -pedantic -g
-SRC = src/game.cpp
-OUT = game
+SRC = src/Game.cpp
+HEADER = src/Game.hpp
+OUT = Game
 
 all: $(OUT)
 
 $(OUT): $(SRC)
-	clang-tidy $(SRC) -- $(CXXFLAGS)
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
 run: $(OUT)
 	./$(OUT)
 
 format:
-	clang-format -i $(SRC)
+	clang-format -i $(SRC) $(HEADER)
+
+tidy:
+	clang-tidy $(SRC) $(HEADER) -- $(CXXFLAGS)
 
 clean:
 	rm -f $(OUT)
+
+.PHONY: all tidy format clean
