@@ -5,8 +5,8 @@
 
 using namespace chess;
 
-std::array<std::array<Position, 8>, 8> Board::makeBoard() {
-  std::array<std::array<Position, 8>, 8> board{};
+std::array<std::array<chess::Piece, 8>, 8> Board::makeBoard() {
+  std::array<std::array<chess::Piece, 8>, 8> board{};
   std::array<char, 8> cols = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
   std::array<int, 8> rows = {1, 2, 3, 4, 5, 6, 7, 8};
   for (auto row : rows) {
@@ -18,42 +18,35 @@ std::array<std::array<Position, 8>, 8> Board::makeBoard() {
         case 1:
         case 8:
           icon = (current_colour == WHITE) ? "\u2656" : "\u265C";
-          board[row - 1][col - 1] =
-              Position(row, cols[col - 1], Piece(ROOK, current_colour, icon));
+          board[row - 1][col - 1] = Piece(ROOK, current_colour, icon);
           break;
         case 2:
         case 7:
           icon = (current_colour == WHITE) ? "\u2658" : "\u265E";
-          board[row - 1][col - 1] =
-              Position(row, cols[col - 1], Piece(KNIGHT, current_colour, icon));
+          board[row - 1][col - 1] = Piece(KNIGHT, current_colour, icon);
           break;
         case 3:
         case 6:
           icon = (current_colour == WHITE) ? "\u2657" : "\u265D";
-          board[row - 1][col - 1] =
-              Position(row, cols[col - 1], Piece(BISHOP, current_colour, icon));
+          board[row - 1][col - 1] = Piece(BISHOP, current_colour, icon);
           break;
         case 4:
           icon = (current_colour == WHITE) ? "\u2655" : "\u265B";
-          board[row - 1][col - 1] =
-              Position(row, cols[col - 1], Piece(QUEEN, current_colour, icon));
+          board[row - 1][col - 1] = Piece(QUEEN, current_colour, icon);
           break;
         case 5:
           icon = (current_colour == WHITE) ? "\u2654" : "\u265A";
-          board[row - 1][col - 1] =
-              Position(row, cols[col - 1], Piece(KING, current_colour, icon));
+          board[row - 1][col - 1] = Piece(KING, current_colour, icon);
           break;
         default:
           break;
         }
       } else if (row == 2 || row == 7) {
         icon = (current_colour == WHITE) ? "\u2659" : "\u265F";
-        board[row - 1][col - 1] =
-            Position(row, cols[col], Piece(PAWN, current_colour, icon));
+        board[row - 1][col - 1] = Piece(PAWN, current_colour, icon);
       } else {
         icon = " ";
-        board[row - 1][col - 1] =
-            Position(row, cols[col - 1], Piece(NO_PIECE, NO_COL, icon));
+        board[row - 1][col - 1] = Piece(NO_PIECE, NO_COL, icon);
       }
     }
   }
@@ -73,19 +66,22 @@ std::string Board::to_string() {
   return result;
 }
 
-class Game {
-  int move = 1;
-  Colour next_to_move = WHITE;
-  Board board{};
-  Player player_1;
-  Player player_2;
-
-  Game(std::string name_1, std::string name_2)
-      : player_1(WHITE, std::move(name_1)), player_2(BLACK, std::move(name_2)) {
+bool chess::Move::valid_move(Colour next_to_move, Piece *start_piece,
+                             Piece *end_piece) {
+  if (start_piece->colour != next_to_move) {
+    // wrong player makes a move
+    return false;
+  } else if (start_piece->colour == end_piece->colour) {
+    // tries to capture one's own piece
+    return false;
+  } else if (start_piece->colour == NO_COL) {
+    // there is no piece at the indicated position
+    return false;
   }
-};
+}
 
 int main() {
+  // Get player names
   std::string name_1, name_2;
   std::println("Welcome! Player 1, please enter your name:");
   std::cin >> name_1;
@@ -96,9 +92,27 @@ int main() {
                  "new name:");
     std::cin >> name_2;
   }
-  Board board{};
-  std::string board_string = board.to_string();
-  std::println("{}", board_string);
+
+  // Initialize game
+  Game game(name_1, name_2);
+  std::println("{}", game.get_board());
+  while (game.get_status() == ONGOING) {
+    /* make moves */
+  };
+
+  switch (game.get_status()) {
+  case WHITE_WON:
+    std::println("Player {} won, congratulations!", game.get_player_name(1));
+    break;
+  case BLACK_WON:
+    std::println("Player {} won, congratulations!", game.get_player_name(2));
+    break;
+  case DRAW:
+    std::println("Draw!");
+    break;
+  default:
+    break;
+  }
 
   return 0;
 }
