@@ -40,7 +40,6 @@ std::array<std::array<Position, 8>, 8> Board::makeBoard() {
                          std::make_unique<Bishop>(current_colour));
             break;
           case 4:
-            icon = (current_colour == WHITE) ? "\u2655" : "\u265B";
             board[row - 1][col - 1] =
                 Position(rows[row - 1], cols[col - 1],
                          std::make_unique<Queen>(current_colour));
@@ -55,7 +54,6 @@ std::array<std::array<Position, 8>, 8> Board::makeBoard() {
             break;
         }
       } else if (row == 2 || row == 7) {
-        icon = (current_colour == WHITE) ? "\u2659" : "\u265F";
         board[row - 1][col - 1] =
             Position(rows[row - 1], cols[col - 1],
                      std::make_unique<Pawn>(current_colour));

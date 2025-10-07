@@ -26,10 +26,10 @@ class Position {
 };
 
 class Board {
-  std::array<std::array<Position, 8>, 8> board;
   static std::array<std::array<Position, 8>, 8> makeBoard();
 
  public:
+  std::array<std::array<Position, 8>, 8> board;
   Board() : board(makeBoard()) {};
   std::string to_string();
   std::array<std::array<Position, 8>, 8> *get_board_ptr() { return &board; }

@@ -49,6 +49,7 @@ class Game {
   std::string get_board();
   GameStatus get_status();
   std::string get_player_name(const unsigned player_number);
+  Board *get_board_ptr() { return this->board_ptr.get(); }
 };
 
 }  // namespace chess
