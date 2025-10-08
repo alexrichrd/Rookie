@@ -17,7 +17,10 @@ class Piece {
   Piece(Colour colour, std::string icon) : colour(colour), icon(icon) {};
   virtual ~Piece() = default;
 
-  Colour get_Colour() { return colour; }
+  Colour get_Colour() {
+    std::println("get_Colour() called on {}", typeid(*this).name());
+    return colour;
+  }
   virtual bool move(Board* board, Position* start_pos, Position* end_pos) = 0;
   std::string get_icon() { return this->icon; }
 };

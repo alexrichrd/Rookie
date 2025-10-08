@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <vector>
 
 #include "Piece.hpp"
 
@@ -20,29 +21,25 @@ class Player {
 enum GameStatus : std::int8_t { ONGOING, WHITE_WON, BLACK_WON, DRAW };
 
 class Move {
-  Colour next_to_move;
-  Piece *start_piece;
-  Piece *end_piece;
-  bool legal;
-
-  static bool valid_move(Colour next_to_move, Piece *start_piece,
-                         Piece *end_piece);
+  std::string white_move;
+  std::string black_move;
+  unsigned move_number;
 
  public:
-  Move(Colour next_to_move, Piece *start_piece, Piece *end_piece)
-      : next_to_move(next_to_move),
-        start_piece(start_piece),
-        end_piece(end_piece),
-        legal(valid_move(next_to_move, start_piece, end_piece)) {};
+  Move(std::string white_move, std::string black_move, unsigned move_number)
+      : white_move(white_move),
+        black_move(black_move),
+        move_number(move_number) {};
 };
 
 class Game {
-  unsigned move = 1;
+  unsigned move_count = 1;
   Colour next_to_move = WHITE;
   Player player_1;
   Player player_2;
   std::unique_ptr<Board> board_ptr;
   GameStatus status = ONGOING;
+  std::vector<Move> moves;
 
  public:
   Game(std::string name_1, std::string name_2);
@@ -50,6 +47,11 @@ class Game {
   GameStatus get_status();
   std::string get_player_name(const unsigned player_number);
   Board *get_board_ptr() { return this->board_ptr.get(); }
+  void add_move(Move move) {
+    move_count++;
+    moves.push_back(move);
+  }
+  unsigned get_move_count() { return move_count; }
 };
 
 }  // namespace chess
