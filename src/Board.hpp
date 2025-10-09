@@ -46,7 +46,11 @@ class Board {
  public:
   std::array<std::array<Position, 8>, 8> board;
   Board() : board(makeBoard()) {};
+  Board(const Board&) = delete;
+  Board(Board&&) noexcept = delete;
+  Board& operator=(const Board&) = delete;
+  Board& operator=(Board&&) noexcept = delete;
   std::string to_string();
-  std::array<std::array<Position, 8>, 8>* get_board_ptr() { return &board; }
+  std::array<std::array<Position, 8>, 8>& get_board_ref() { return board; }
 };
 }  // namespace chess

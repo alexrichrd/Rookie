@@ -14,7 +14,7 @@ using namespace chess;
 Game::Game(std::string name_1, std::string name_2)
     : player_1(WHITE, std::move(name_1)),
       player_2(BLACK, std::move(name_2)),
-      board_ptr(std::make_unique<Board>(Board())) {}
+      board_ptr(std::make_unique<Board>()) {};
 std::string Game::get_board() { return this->board_ptr->to_string(); }
 GameStatus Game::get_status() { return this->status; }
 std::string Game::get_player_name(const unsigned player_number) {
@@ -104,8 +104,8 @@ std::string request_and_execute_move(std::string player_name,
   }
   // perform the move
   game.get_board_ptr()->board[start_row][start_col].get_raw_piece_ptr()->move(
-      game.get_board_ptr(), &game.get_board_ptr()->board[start_row][start_col],
-      &game.get_board_ptr()->board[end_row][end_col]);
+      game.get_board_ptr(), game.get_board_ptr()->board[start_row][start_col],
+      game.get_board_ptr()->board[end_row][end_col]);
 
   return parse_info;
 }

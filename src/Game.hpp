@@ -43,11 +43,15 @@ class Game {
 
  public:
   Game(std::string name_1, std::string name_2);
+  Game(const Game&) = delete;
+  Game& operator=(const Game&) = delete;
+  Game(Game&&) noexcept = default;
+  Game& operator=(Game&&) noexcept = default;
   std::string get_board();
   GameStatus get_status();
   std::string get_player_name(const unsigned player_number);
-  Board *get_board_ptr() { return this->board_ptr.get(); }
-  void add_move(Move move) {
+  Board* get_board_ptr() { return this->board_ptr.get(); }
+  void add_move(Move&& move) {
     move_count++;
     moves.push_back(move);
   }

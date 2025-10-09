@@ -5,7 +5,7 @@
 
 #include "Board.hpp"
 
-bool moveUtils::valid_vertical_move(chess::Board* board, unsigned start_row,
+bool moveUtils::valid_vertical_move(chess::Board& board, unsigned start_row,
                                     unsigned start_col, unsigned end_col) {
   bool moves_along_column = start_col == end_col;
   if (!moves_along_column) {
@@ -15,15 +15,15 @@ bool moveUtils::valid_vertical_move(chess::Board* board, unsigned start_row,
   if (distance > 1) {
     if (start_col < end_col) {
       for (unsigned i = 1; i < distance; ++i) {
-        if (!(*board->get_board_ptr())[start_row][start_col + i]
-                 .get_raw_piece_ptr()) {
+        if (!(board.get_board_ref()[start_row][start_col + i]
+                  .get_raw_piece_ptr())) {
           return false;
         }
       }
     } else {
       for (unsigned i = 1; i < distance; ++i) {
-        if (!(*board->get_board_ptr())[start_row][start_col - i]
-                 .get_raw_piece_ptr()) {
+        if (!(board.get_board_ref()[start_row][start_col - i]
+                  .get_raw_piece_ptr())) {
           return false;
         }
       }
@@ -33,7 +33,7 @@ bool moveUtils::valid_vertical_move(chess::Board* board, unsigned start_row,
   return true;
 }
 
-bool moveUtils::valid_horizontal_move(chess::Board* board, unsigned start_row,
+bool moveUtils::valid_horizontal_move(chess::Board& board, unsigned start_row,
                                       unsigned start_col, unsigned end_row,
                                       unsigned end_col) {
   bool moves_along_row = start_row == end_row;
@@ -44,15 +44,15 @@ bool moveUtils::valid_horizontal_move(chess::Board* board, unsigned start_row,
   if (distance > 1) {
     if (start_row < end_row) {
       for (unsigned i = 1; i < distance; ++i) {
-        if (!(*board->get_board_ptr())[start_row + i][start_col]
-                 .get_raw_piece_ptr()) {
+        if (!(board.get_board_ref()[start_row + i][start_col]
+                  .get_raw_piece_ptr())) {
           return false;
         }
       }
     } else {
       for (unsigned i = 1; i < distance; ++i) {
-        if (!(*board->get_board_ptr())[start_row - i][start_col]
-                 .get_raw_piece_ptr()) {
+        if (!(board.get_board_ref()[start_row - i][start_col]
+                  .get_raw_piece_ptr())) {
           return false;
         }
       }
@@ -61,7 +61,7 @@ bool moveUtils::valid_horizontal_move(chess::Board* board, unsigned start_row,
   return true;
 }
 
-bool moveUtils::valid_diagonal_move(chess::Board* board, unsigned start_row,
+bool moveUtils::valid_diagonal_move(chess::Board& board, unsigned start_row,
                                     unsigned start_col, unsigned end_row,
                                     unsigned end_col) {
   int col_diff = std::abs((int)start_col - (int)end_col);
@@ -73,9 +73,10 @@ bool moveUtils::valid_diagonal_move(chess::Board* board, unsigned start_row,
   int sign_horizontal = (end_col - start_col > 0) ? 1 : -1;
   // verify there are no other pieces along the way
   for (unsigned i = 1; i < (unsigned)col_diff; ++i) {
-    if (!(*board->get_board_ptr())[start_row + i * sign_vertical]
-                                  [start_col + i * sign_horizontal]
-                                      .get_raw_piece_ptr()) {
+    if (!(board
+              .get_board_ref()[start_row + i * sign_vertical]
+                              [start_col + i * sign_horizontal]
+              .get_raw_piece_ptr())) {
       return false;
     }
   }
@@ -88,7 +89,7 @@ std::map<char, char> column_to_unsigned = {{'A', '1'}, {'B', '2'}, {'C', '3'},
                                            {'D', '4'}, {'E', '5'}, {'F', '6'},
                                            {'G', '7'}, {'H', '8'}};
 
-bool chess::Rook::move(Board* board, Position* start_pos, Position* end_pos) {
+bool chess::Rook::move(Board& board, Position* start_pos, Position* end_pos) {
   unsigned start_row = start_pos->get_row();
   unsigned start_col = column_to_unsigned[start_pos->get_column()];
   unsigned end_row = end_pos->get_row();
@@ -112,7 +113,7 @@ bool chess::Rook::move(Board* board, Position* start_pos, Position* end_pos) {
   return true;
 }
 
-bool chess::Bishop::move(Board* board, Position* start_pos, Position* end_pos) {
+bool chess::Bishop::move(Board& board, Position* start_pos, Position* end_pos) {
   unsigned start_row = start_pos->get_row();
   unsigned start_col = column_to_unsigned[start_pos->get_column()];
   unsigned end_row = end_pos->get_row();
@@ -128,7 +129,7 @@ bool chess::Bishop::move(Board* board, Position* start_pos, Position* end_pos) {
   return true;
 }
 
-bool chess::Queen::move(Board* board, Position* start_pos, Position* end_pos) {
+bool chess::Queen::move(Board& board, Position* start_pos, Position* end_pos) {
   unsigned start_row = start_pos->get_row();
   unsigned start_col = column_to_unsigned[start_pos->get_column()];
   unsigned end_row = end_pos->get_row();
@@ -162,7 +163,7 @@ bool chess::Queen::move(Board* board, Position* start_pos, Position* end_pos) {
   return true;
 }
 
-bool chess::Knight::move(Board* /**/, Position* start_pos, Position* end_pos) {
+bool chess::Knight::move(Board& /**/, Position* start_pos, Position* end_pos) {
   unsigned start_row = start_pos->get_row();
   unsigned start_col = column_to_unsigned[start_pos->get_column()];
   unsigned end_row = end_pos->get_row();
@@ -189,7 +190,7 @@ bool chess::Knight::move(Board* /**/, Position* start_pos, Position* end_pos) {
   return true;
 }
 
-bool chess::King::move(Board* /**/, Position* start_pos, Position* end_pos) {
+bool chess::King::move(Board& /**/, Position* start_pos, Position* end_pos) {
   unsigned start_row = start_pos->get_row();
   unsigned start_col = column_to_unsigned[start_pos->get_column()];
   unsigned end_row = end_pos->get_row();
@@ -206,7 +207,7 @@ bool chess::King::move(Board* /**/, Position* start_pos, Position* end_pos) {
   return true;
 }
 
-bool chess::Pawn::move(Board* /**/, Position* start_pos, Position* end_pos) {
+bool chess::Pawn::move(Board& /**/, Position* start_pos, Position* end_pos) {
   unsigned start_row = start_pos->get_row();
   unsigned start_col = column_to_unsigned[start_pos->get_column()];
   unsigned end_row = end_pos->get_row();
