@@ -4,18 +4,97 @@
 #include <array>
 #include <cctype>
 #include <iostream>
+#include <map>
 #include <string>
 
-#include "Board.hpp"
 #include "Piece.hpp"
 
 using namespace chess;
 
+std::map<std::string, unsigned> chessCol_to_arrayCol = {
+    {"a", 0}, {"b", 1}, {"c", 2}, {"d", 3},
+    {"e", 4}, {"f", 5}, {"g", 6}, {"h", 7}};
+
+std::map<unsigned, unsigned> chessRow_to_arrayRow = {
+    {1, 0}, {2, 1}, {3, 2}, {4, 3}, {5, 4}, {6, 5}, {7, 6}, {8, 7}};
+
+std::array<std::array<Position, 8>, 8> Game::makeBoard() {
+  std::array<std::array<Position, 8>, 8> board{};
+  for (const auto& [chessRow, arrayRow] : chessRow_to_arrayRow) {
+    Colour current_colour = (arrayRow <= 1) ? WHITE : BLACK;
+    for (const auto& [chessCol, arrayCol] : chessCol_to_arrayCol) {
+      std::string icon = "";
+      if (arrayRow == 0 || arrayRow == 7) {
+        switch (arrayCol) {
+          case 0:
+          case 7:
+            board[arrayRow][arrayCol] = Position(
+                arrayRow, arrayCol, std::make_unique<Rook>(current_colour));
+            break;
+          case 1:
+          case 6:
+            board[arrayRow][arrayCol] = Position(
+                arrayRow, arrayCol, std::make_unique<Knight>(current_colour));
+            break;
+          case 2:
+          case 5:
+            board[arrayRow][arrayCol] = Position(
+                arrayRow, arrayCol, std::make_unique<Bishop>(current_colour));
+            break;
+          case 3:
+            board[arrayRow][arrayCol] = Position(
+                arrayRow, arrayCol, std::make_unique<Queen>(current_colour));
+            break;
+          case 4:
+            board[arrayRow][arrayCol] = Position(
+                arrayRow, arrayCol, std::make_unique<King>(current_colour));
+
+            break;
+          default:
+            break;
+        }
+      } else if (arrayRow == 1 || arrayRow == 6) {
+        board[arrayRow][arrayCol] = Position(
+            arrayRow, arrayCol, std::make_unique<Pawn>(current_colour));
+
+      } else {
+        icon = " ";
+        board[arrayRow][arrayCol] = Position(arrayRow, arrayCol, nullptr);
+      }
+    }
+  }
+  return board;
+}
+
+std::string Game::to_string() {
+  if (this->board_ptr) {
+    std::string result = std::string("+------------------------+\n");
+    for (size_t row = 0; row < 8; row++) {
+      result += std::string("|");
+      for (size_t col = 0; col < 8; col++) {
+        if ((*board_ptr)[7 - row][col].get_piece_ptr()) {
+          result += "\u200A" +
+                    (*board_ptr)[7 - row][col].get_piece_ptr()->get_icon() +
+                    "\u200A";
+        } else {
+          result += std::string("\u200A") + std::string("\u200A") +
+                    std::string("\u200A");
+        }
+      }
+      result += std::string("|\n");
+    }
+    result += std::string("+------------------------+\n");
+    return result;
+  } else {
+    return "error: no board found.";
+  }
+}
+
 Game::Game(std::string name_1, std::string name_2)
     : player_1(WHITE, std::move(name_1)),
       player_2(BLACK, std::move(name_2)),
-      board_ptr(std::make_unique<Board>()) {};
-std::string Game::get_board() { return this->board_ptr->to_string(); }
+      board_ptr(std::make_unique<Board>(makeBoard())) {};
+
 GameStatus Game::get_status() { return this->status; }
 std::string Game::get_player_name(const unsigned player_number) {
   if (player_number == 1) {
@@ -24,35 +103,59 @@ std::string Game::get_player_name(const unsigned player_number) {
   return this->player_2.get_name();
 }
 
-std::string parse_move_input(std::string& input, char& start_col,
-                             unsigned& start_row, char& end_col,
+std::string parse_move_input(std::string& input, unsigned& start_col,
+                             unsigned& start_row, unsigned& end_col,
                              unsigned& end_row) {
   std::string s = input;
   s.erase(std::remove_if(s.begin(), s.end(), ::isspace), s.end());
-
   s.erase(std::remove(s.begin(), s.end(), '('), s.end());
   s.erase(std::remove(s.begin(), s.end(), ')'), s.end());
   s.erase(std::remove(s.begin(), s.end(), ','), s.end());
 
   if (s.size() != 4) return "error: input string must have length four";
 
-  start_col = std::tolower(s[0]);
-  start_row = s[1] - '0';
-  end_col = std::tolower(s[2]);
-  end_row = s[3] - '0';
+  char c0 = static_cast<char>(std::tolower(static_cast<unsigned char>(s[0])));
+  std::string start_key(1, c0);
+  auto it_start_col = chessCol_to_arrayCol.find(start_key);
+  if (it_start_col == chessCol_to_arrayCol.end())
+    return "error: invalid start column letter";
+  start_col = it_start_col->second;
 
-  if (start_col < 'a' || start_col > 'h' || end_col < 'a' || end_col > 'h' ||
-      start_row < 1 || start_row > 8 || end_row < 1 || end_row > 8)
+  char c2 = static_cast<char>(std::tolower(static_cast<unsigned char>(s[2])));
+  std::string end_key(1, c2);
+  auto it_end_col = chessCol_to_arrayCol.find(end_key);
+  if (it_end_col == chessCol_to_arrayCol.end())
+    return "error: invalid end column letter";
+  end_col = it_end_col->second;
+
+  if (!std::isdigit(static_cast<unsigned char>(s[1])) ||
+      !std::isdigit(static_cast<unsigned char>(s[3])))
+    return "error: invalid row characters";
+
+  unsigned start_row_chess = s[1] - '0';
+  unsigned end_row_chess = s[3] - '0';
+
+  auto it_start_row = chessRow_to_arrayRow.find(start_row_chess);
+  if (it_start_row == chessRow_to_arrayRow.end())
+    return "error: invalid start row number";
+  start_row = it_start_row->second;
+
+  auto it_end_row = chessRow_to_arrayRow.find(end_row_chess);
+  if (it_end_row == chessRow_to_arrayRow.end())
+    return "error: invalid end row number";
+  end_row = it_end_row->second;
+
+  if (start_col > 7 || end_col > 7 || start_row > 7 || end_row > 7)
     return "error: column or row out of bounds";
 
-  return std::to_string(start_col) + std::to_string(start_row) +
-         std::to_string(end_col) + std::to_string(end_row);
+  return "ok";
 }
 
 std::string request_and_execute_move(std::string player_name,
-                                     std::string& player_input, char& start_col,
-                                     unsigned& start_row, char& end_col,
-                                     unsigned& end_row, Game& game) {
+                                     std::string& player_input,
+                                     unsigned& start_col, unsigned& start_row,
+                                     unsigned& end_col, unsigned& end_row,
+                                     Game& game) {
   std::println("{}, your move (<start_col><start_row><end_col><end_row>): ",
                player_name);
   std::cin >> player_input;
@@ -70,7 +173,7 @@ std::string request_and_execute_move(std::string player_name,
                              end_col, end_row, game);
   }
   // check that there's a piece at start_pos
-  if (!game.get_board_ptr()->board[start_row][start_col].get_raw_piece_ptr()) {
+  if (!(game.get_board_ptr()->at(start_row).at(start_col).get_piece_ptr())) {
     parse_info = "no piece at start position";
     std::println("{}, that was an illegal move ({}).", player_name, parse_info);
     request_and_execute_move(player_name, player_input, start_col, start_row,
@@ -83,14 +186,16 @@ std::string request_and_execute_move(std::string player_name,
     request_and_execute_move(player_name, player_input, start_col, start_row,
                              end_col, end_row, game);
   }
-  if (game.get_board_ptr()->board[end_row][end_col].get_raw_piece_ptr()) {
+  if (!(game.get_board_ptr()->at(end_row).at(end_col).get_piece_ptr())) {
     Colour start_colour = game.get_board_ptr()
-                              ->board[start_row][start_col]
-                              .get_raw_piece_ptr()
+                              ->at(start_row)
+                              .at(start_col)
+                              .get_piece_ptr()
                               ->get_Colour();
     Colour end_colour = game.get_board_ptr()
-                            ->board[end_row][end_col]
-                            .get_raw_piece_ptr()
+                            ->at(end_row)
+                            .at(end_col)
+                            .get_piece_ptr()
                             ->get_Colour();
     // there is a piece at end_pos
     if (start_colour == end_colour) {
@@ -103,9 +208,9 @@ std::string request_and_execute_move(std::string player_name,
     }
   }
   // perform the move
-  game.get_board_ptr()->board[start_row][start_col].get_raw_piece_ptr()->move(
-      game.get_board_ptr(), game.get_board_ptr()->board[start_row][start_col],
-      game.get_board_ptr()->board[end_row][end_col]);
+  game.get_board_ptr()->at(start_row).at(start_col).get_piece_ptr()->move(
+      *game.get_board_ptr(), game.get_board_ptr()->at(start_row).at(start_col),
+      game.get_board_ptr()->at(end_row).at(end_col));
 
   return parse_info;
 }
@@ -126,20 +231,23 @@ int main() {
 
   // Initialize game
   Game game(name_1, name_2);
-  std::println("{}", game.get_board());
+  std::println("{}", game.to_string());
   std::string player_input;
+  // the parsed player input goes here:
   unsigned start_row;
-  char start_col;
+  unsigned start_col;
   unsigned end_row;
-  char end_col;
+  unsigned end_col;
   std::string player_white_output;
   std::string player_black_output;
 
   while (game.get_status() == ONGOING) {
     player_white_output = request_and_execute_move(
         name_1, player_input, start_col, start_row, end_col, end_row, game);
+    std::println("{}", game.to_string());
     player_black_output = request_and_execute_move(
         name_2, player_input, start_col, start_row, end_col, end_row, game);
+    std::println("{}", game.to_string());
     game.add_move(
         {player_white_output, player_black_output, game.get_move_count()});
   };
