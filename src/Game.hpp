@@ -56,6 +56,7 @@ class Game {
   unsigned get_move_count() { return move_count; }
   std::string to_string();
   Board* get_board_ptr() { return board_ptr.get(); }
+  void set_next_to_move(Colour colour) { this->next_to_move = colour; }
 };
 
 }  // namespace chess
