@@ -79,7 +79,8 @@ bool moveUtils::valid_diagonal_move(chess::Board& board, unsigned start_row,
 
 using namespace chess;
 
-std::string chess::Rook::move(Board& board, Position& start_pos, Position& end_pos) {
+std::string chess::Rook::move(Board& board, Position& start_pos,
+                              Position& end_pos) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -103,7 +104,8 @@ std::string chess::Rook::move(Board& board, Position& start_pos, Position& end_p
   return "Legal move";
 }
 
-std::string chess::Bishop::move(Board& board, Position& start_pos, Position& end_pos) {
+std::string chess::Bishop::move(Board& board, Position& start_pos,
+                                Position& end_pos) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -119,7 +121,8 @@ std::string chess::Bishop::move(Board& board, Position& start_pos, Position& end
   return "Legal move";
 }
 
-std::string chess::Queen::move(Board& board, Position& start_pos, Position& end_pos) {
+std::string chess::Queen::move(Board& board, Position& start_pos,
+                               Position& end_pos) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -138,7 +141,8 @@ std::string chess::Queen::move(Board& board, Position& start_pos, Position& end_
           board, start_row, start_col, end_row, end_col);
     }
     if (!(valid_horizontal_move ^ valid_vertical_move)) {
-      return "Illegal move: tried to move Queen neither like a rook nor like a bishop";
+      return "Illegal move: tried to move Queen neither like a rook nor like a "
+             "bishop";
     }
     end_pos.set_piece_ptr(start_pos.release_piece_ptr());
     return "Legal move";
@@ -147,13 +151,15 @@ std::string chess::Queen::move(Board& board, Position& start_pos, Position& end_
   int valid_diagonal_move = moveUtils::valid_diagonal_move(
       board, start_row, start_col, end_row, end_col);
   if (!valid_diagonal_move) {
-    return "Illegal move: tried to move Queen neither like a rook nor like a bishop";
+    return "Illegal move: tried to move Queen neither like a rook nor like a "
+           "bishop";
   }
   end_pos.set_piece_ptr(start_pos.release_piece_ptr());
   return "Legal move";
 }
 
-std::string chess::Knight::move(Board& /**/, Position& start_pos, Position& end_pos) {
+std::string chess::Knight::move(Board& /**/, Position& start_pos,
+                                Position& end_pos) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -163,7 +169,7 @@ std::string chess::Knight::move(Board& /**/, Position& start_pos, Position& end_
   // end_row differs from start_row by one (or vice versa)
   int col_diff = std::abs((int)start_col - (int)end_col);
   int row_diff = std::abs((int)start_row - (int)end_row);
-  if (!(col_diff == 2 && row_diff == 1) || (col_diff == 1 && row_diff == 2)) {
+  if (!((col_diff == 2 && row_diff == 1) || (col_diff == 1 && row_diff == 2))) {
     return "Illegal knight move";
   }
 
@@ -171,7 +177,8 @@ std::string chess::Knight::move(Board& /**/, Position& start_pos, Position& end_
   return "Legal move";
 }
 
-std::string chess::King::move(Board& /**/, Position& start_pos, Position& end_pos) {
+std::string chess::King::move(Board& /**/, Position& start_pos,
+                              Position& end_pos) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -188,7 +195,8 @@ std::string chess::King::move(Board& /**/, Position& start_pos, Position& end_po
   return "Legal move";
 }
 
-std::string chess::Pawn::move(Board& /**/, Position& start_pos, Position& end_pos) {
+std::string chess::Pawn::move(Board& /**/, Position& start_pos,
+                              Position& end_pos) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -213,9 +221,9 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos, Position& end_po
       end_pos.set_piece_ptr(start_pos.release_piece_ptr());
       return "Legal move";
       // pawn moves two steps forward
-    } else if (distance_vertical == 1 && distance_horizontal == 0) {
-      // check if start_pos was in row 2
-      if (start_pos.get_row() != 2) {
+    } else if (distance_vertical == 2 && distance_horizontal == 0) {
+      // check if start_pos was in row 1
+      if (start_pos.get_row() != 1) {
         return "Illegal pawn move";
       }
       // check if target is empty
@@ -247,9 +255,9 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos, Position& end_po
       end_pos.set_piece_ptr(start_pos.release_piece_ptr());
       return "Legal move";
       // pawn moves two steps forward
-    } else if (distance_vertical == 1 && distance_horizontal == 0) {
+    } else if (distance_vertical == 2 && distance_horizontal == 0) {
       // check if start_pos was in row 2
-      if (start_pos.get_row() != 7) {
+      if (start_pos.get_row() != 6) {
         return "Illegal pawn move";
       }
       // check if target is empty

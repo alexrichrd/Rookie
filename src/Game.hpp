@@ -39,16 +39,24 @@ class Game {
   GameStatus status = ONGOING;
   std::vector<Move> moves;
 
-  static std::array<std::array<Position, 8>, 8> makeBoard();
+  static Board makeBoard();
 
  public:
-  Game(std::string name_1, std::string name_2);
+  Game(std::string name_1, std::string name_2)
+      : player_1(WHITE, std::move(name_1)),
+        player_2(BLACK, std::move(name_2)),
+        board_ptr(std::make_unique<Board>(makeBoard())) {};
   Game(const Game&) = delete;
   Game& operator=(const Game&) = delete;
   Game(Game&&) noexcept = default;
   Game& operator=(Game&&) noexcept = default;
-  GameStatus get_status();
-  std::string get_player_name(const unsigned player_number);
+  GameStatus get_status() { return this->status; }
+  std::string get_player_name(const unsigned player_number) {
+    if (player_number == 1) {
+      return this->player_1.get_name();
+    }
+    return this->player_2.get_name();
+  }
   void add_move(Move&& move) {
     move_count++;
     moves.push_back(move);
@@ -57,6 +65,8 @@ class Game {
   std::string to_string();
   Board* get_board_ptr() { return board_ptr.get(); }
   void set_next_to_move(Colour colour) { this->next_to_move = colour; }
+  Colour get_next_to_move() { return this->next_to_move; }
+  static void play_game();
 };
 
 }  // namespace chess

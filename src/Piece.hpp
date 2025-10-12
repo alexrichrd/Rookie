@@ -34,7 +34,8 @@ class Piece {
   virtual ~Piece() = default;
 
   virtual Colour get_Colour() = 0;
-  virtual std::string move(Board& board, Position& start_pos, Position& end_pos) = 0;
+  virtual std::string move(Board& board, Position& start_pos,
+                           Position& end_pos) = 0;
   std::string get_icon() { return this->icon; }
 };
 
@@ -43,7 +44,8 @@ class Rook : public Piece {
   Rook(Colour colour)
       : Piece(colour, (colour == WHITE) ? "\u2656" : "\u265C") {}
   Colour get_Colour() override { return colour; }
-  std::string move(Board& board, Position& start_pos, Position& end_pos) override;
+  std::string move(Board& board, Position& start_pos,
+                   Position& end_pos) override;
 };
 
 class Knight : public Piece {

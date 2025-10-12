@@ -7,7 +7,7 @@ class Piece;
 
 class Position {
   // chess positions are internally represented as array positions,
-  // e.g. position c4 is 2,3 (column, row)
+  // e.g. position c4 is 23 (column, row)
   unsigned row;
   unsigned column;
   std::unique_ptr<Piece> piece_ptr;
