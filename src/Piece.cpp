@@ -80,14 +80,14 @@ bool moveUtils::valid_diagonal_move(chess::Board& board, unsigned start_row,
 using namespace chess;
 
 std::string chess::Rook::move(Board& board, Position& start_pos,
-                              Position& end_pos) {
+                              Position& end_pos, unsigned /**/) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
   unsigned end_col = end_pos.get_column();
   // rook has to move either along same column or same row, but not both
-  bool moves_along_column = start_row == end_row;
-  bool moves_along_row = start_col == end_col;
+  bool moves_along_row = start_row == end_row;
+  bool moves_along_column = start_col == end_col;
   bool valid_horizontal_move = false;
   bool valid_vertical_move = false;
   if (moves_along_row) {
@@ -96,16 +96,21 @@ std::string chess::Rook::move(Board& board, Position& start_pos,
   } else if (moves_along_column) {
     valid_vertical_move = moveUtils::valid_vertical_move(
         board, start_row, start_col, end_row, end_col);
+  } else {
+    return "Illegal move: Rook is neither moved horizontally nor vertically.";
   }
-  if (!(valid_horizontal_move ^ valid_vertical_move)) {
-    return "Illegal move: tried to move rook diagonally";
+
+  if (valid_horizontal_move ^ valid_vertical_move) {
+    end_pos.set_piece_ptr(start_pos.release_piece_ptr());
+    return "Legal move";
+  } else {
+    return "Illegal move: horizontal or vertical rook move could not be "
+           "performed.";
   }
-  end_pos.set_piece_ptr(start_pos.release_piece_ptr());
-  return "Legal move";
 }
 
 std::string chess::Bishop::move(Board& board, Position& start_pos,
-                                Position& end_pos) {
+                                Position& end_pos, unsigned /**/) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -122,7 +127,7 @@ std::string chess::Bishop::move(Board& board, Position& start_pos,
 }
 
 std::string chess::Queen::move(Board& board, Position& start_pos,
-                               Position& end_pos) {
+                               Position& end_pos, unsigned /**/) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -159,7 +164,7 @@ std::string chess::Queen::move(Board& board, Position& start_pos,
 }
 
 std::string chess::Knight::move(Board& /**/, Position& start_pos,
-                                Position& end_pos) {
+                                Position& end_pos, unsigned /**/) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -178,7 +183,7 @@ std::string chess::Knight::move(Board& /**/, Position& start_pos,
 }
 
 std::string chess::King::move(Board& /**/, Position& start_pos,
-                              Position& end_pos) {
+                              Position& end_pos, unsigned /**/) {
   unsigned start_row = start_pos.get_row();
   unsigned start_col = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
@@ -196,18 +201,18 @@ std::string chess::King::move(Board& /**/, Position& start_pos,
 }
 
 std::string chess::Pawn::move(Board& /**/, Position& start_pos,
-                              Position& end_pos) {
+                              Position& end_pos, unsigned move_count) {
   unsigned start_row = start_pos.get_row();
-  unsigned start_col = start_pos.get_column();
+  unsigned start_column = start_pos.get_column();
   unsigned end_row = end_pos.get_row();
-  unsigned end_col = end_pos.get_column();
+  unsigned end_column = end_pos.get_column();
+  Colour start_colour = this->colour;
+  Piece* end_pos_piece_ptr = end_pos.get_piece_ptr();
   unsigned distance_vertical =
       (unsigned)std::abs((int)start_row - (int)end_row);
   unsigned distance_horizontal =
-      (unsigned)std::abs((int)start_col - (int)end_col);
-  std::println("{} Pawn moving: {}{} to {}{}", ColourToString(this->colour),
-               start_col, start_row, end_col, end_row);
-  if (this->colour == WHITE) {
+      (unsigned)std::abs((int)start_column - (int)end_column);
+  if (start_colour == WHITE) {
     // check if pawn moves in right direction
     if (start_row >= end_row || distance_horizontal > 1) {
       return "Illegal pawn move";
@@ -215,7 +220,7 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos,
     // pawn moves one step forward
     if (distance_vertical == 1 && distance_horizontal == 0) {
       // check if target is empty
-      if (end_pos.get_piece_ptr()) {
+      if (end_pos_piece_ptr) {
         return "Illegal pawn move";
       }
       end_pos.set_piece_ptr(start_pos.release_piece_ptr());
@@ -223,20 +228,27 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos,
       // pawn moves two steps forward
     } else if (distance_vertical == 2 && distance_horizontal == 0) {
       // check if start_pos was in row 1
-      if (start_pos.get_row() != 1) {
+      if (start_row != 1) {
         return "Illegal pawn move";
       }
       // check if target is empty
-      if (end_pos.get_piece_ptr()) {
+      if (end_pos_piece_ptr) {
         return "Illegal pawn move";
       }
+      this->set_en_passant_susceptability(move_count);
       end_pos.set_piece_ptr(start_pos.release_piece_ptr());
       return "Legal move";
     } else if (distance_vertical == 1 && distance_horizontal == 1) {
-      // check if target contains a piece of a different colour
-      if (end_pos.get_piece_ptr()->get_Colour() == BLACK) {
+      if (!end_pos_piece_ptr) {
+        // check for en passant
+        // otherwise move is illegal
+        return "Illegal move: diagonal pawn move without capture";
+      } else if (end_pos_piece_ptr->get_Colour() == BLACK) {
+        // check if target contains a piece of a different colour
         end_pos.set_piece_ptr(start_pos.release_piece_ptr());
         return "Legal move";
+      } else {
+        return "Illegal pawn move";
       }
     }
     return "Illegal pawn move";
@@ -249,7 +261,7 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos,
     // pawn moves one step forward
     if (distance_vertical == 1 && distance_horizontal == 0) {
       // check if target is empty
-      if (end_pos.get_piece_ptr()) {
+      if (end_pos_piece_ptr) {
         return "Illegal pawn move";
       }
       end_pos.set_piece_ptr(start_pos.release_piece_ptr());
@@ -257,20 +269,27 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos,
       // pawn moves two steps forward
     } else if (distance_vertical == 2 && distance_horizontal == 0) {
       // check if start_pos was in row 2
-      if (start_pos.get_row() != 6) {
+      if (start_row != 6) {
         return "Illegal pawn move";
       }
       // check if target is empty
-      if (end_pos.get_piece_ptr()) {
+      if (end_pos_piece_ptr) {
         return "Illegal pawn move";
       }
+      this->set_en_passant_susceptability(move_count);
       end_pos.set_piece_ptr(start_pos.release_piece_ptr());
       return "Legal move";
     } else if (distance_vertical == 1 && distance_horizontal == 1) {
-      // check if target contains a piece of a different colour
-      if (end_pos.get_piece_ptr()->get_Colour() == WHITE) {
+      if (!end_pos_piece_ptr) {
+        // check for en passant
+        // otherwise move is illegal
+        return "Illegal move: diagonal pawn move without capture";
+      } else if (end_pos_piece_ptr->get_Colour() == WHITE) {
+        // check if target contains a piece of a different colour
         end_pos.set_piece_ptr(start_pos.release_piece_ptr());
         return "Legal move";
+      } else {
+        return "Illegal pawn move";
       }
     }
     return "Illegal pawn move";

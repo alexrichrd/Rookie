@@ -169,7 +169,7 @@ std::string request_and_execute_move(std::string player_name,
     return request_and_execute_move(player_name, player_input, start_column,
                                     start_row, end_column, end_row, game);
   }
-  // TODO: check if piece of correct colour is tried to be moved
+  // check if piece of correct colour is tried to be moved
   Colour start_colour = moved_piece_ptr->get_Colour();
   if (start_colour != game.get_next_to_move()) {
     parse_info = "Illegal input: tried to move opponent's piece";
@@ -203,7 +203,7 @@ std::string request_and_execute_move(std::string player_name,
   parse_info = moved_piece_ptr->move(
       *game.get_board_ptr(),
       game.get_board_ptr()->at(start_row).at(start_column),
-      game.get_board_ptr()->at(end_row).at(end_column));
+      game.get_board_ptr()->at(end_row).at(end_column), game.get_move_count());
 
   if (parse_info.find("Illegal") != std::string::npos) {
     std::println("{}", parse_info);
