@@ -200,7 +200,7 @@ std::string chess::King::move(Board& /**/, Position& start_pos,
   return "Legal move";
 }
 
-std::string chess::Pawn::move(Board& /**/, Position& start_pos,
+std::string chess::Pawn::move(Board& board, Position& start_pos,
                               Position& end_pos, unsigned move_count) {
   unsigned start_row = start_pos.get_row();
   unsigned start_column = start_pos.get_column();
@@ -241,6 +241,16 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos,
     } else if (distance_vertical == 1 && distance_horizontal == 1) {
       if (!end_pos_piece_ptr) {
         // check for en passant
+        Pawn* en_passant_target = dynamic_cast<Pawn*>(
+            board.at(start_row).at(end_column).get_piece_ptr());
+        if (en_passant_target) {
+          if (move_count ==
+              en_passant_target->get_en_passant_susceptability()) {
+            board.at(start_row).at(end_column).release_piece_ptr();
+            end_pos.set_piece_ptr(start_pos.release_piece_ptr());
+            return "Legal move";
+          }
+        }
         // otherwise move is illegal
         return "Illegal move: diagonal pawn move without capture";
       } else if (end_pos_piece_ptr->get_Colour() == BLACK) {
@@ -282,6 +292,16 @@ std::string chess::Pawn::move(Board& /**/, Position& start_pos,
     } else if (distance_vertical == 1 && distance_horizontal == 1) {
       if (!end_pos_piece_ptr) {
         // check for en passant
+        Pawn* en_passant_target = dynamic_cast<Pawn*>(
+            board.at(start_row).at(end_column).get_piece_ptr());
+        if (en_passant_target) {
+          if (move_count ==
+              en_passant_target->get_en_passant_susceptability()) {
+            board.at(start_row).at(end_column).release_piece_ptr();
+            end_pos.set_piece_ptr(start_pos.release_piece_ptr());
+            return "Legal move";
+          }
+        }
         // otherwise move is illegal
         return "Illegal move: diagonal pawn move without capture";
       } else if (end_pos_piece_ptr->get_Colour() == WHITE) {

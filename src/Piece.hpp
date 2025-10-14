@@ -96,6 +96,7 @@ class Pawn : public Piece {
   void set_en_passant_susceptability(unsigned move_count) {
     en_passant_until_move = ++move_count;
   }
+  unsigned get_en_passant_susceptability() { return en_passant_until_move; }
 };
 }  // namespace chess
 
