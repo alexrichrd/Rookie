@@ -17,8 +17,8 @@ std::map<std::string, unsigned> file_to_index = {{"a", 0}, {"b", 1}, {"c", 2},
                                                  {"d", 3}, {"e", 4}, {"f", 5},
                                                  {"g", 6}, {"h", 7}};
 
-chess::Board Game::makeBoard() {
-  chess::Board board{};
+chess::BoardContext Game::make_board_context() {
+  chess::BoardContext board_context{};
   for (const auto& [rank, row_index] : rank_to_index) {
     Colour current_colour = (row_index <= 1) ? WHITE : BLACK;
     for (const auto& [file, column_index] : file_to_index) {
@@ -26,29 +26,29 @@ chess::Board Game::makeBoard() {
         switch (column_index) {
           case 0:
           case 7:
-            board[row_index][column_index] =
+            board_context.board[row_index][column_index] =
                 Position(row_index, column_index,
                          std::make_unique<Rook>(current_colour));
             break;
           case 1:
           case 6:
-            board[row_index][column_index] =
+            board_context.board[row_index][column_index] =
                 Position(row_index, column_index,
                          std::make_unique<Knight>(current_colour));
             break;
           case 2:
           case 5:
-            board[row_index][column_index] =
+            board_context.board[row_index][column_index] =
                 Position(row_index, column_index,
                          std::make_unique<Bishop>(current_colour));
             break;
           case 3:
-            board[row_index][column_index] =
+            board_context.board[row_index][column_index] =
                 Position(row_index, column_index,
                          std::make_unique<Queen>(current_colour));
             break;
           case 4:
-            board[row_index][column_index] =
+            board_context.board[row_index][column_index] =
                 Position(row_index, column_index,
                          std::make_unique<King>(current_colour));
             break;
@@ -56,29 +56,29 @@ chess::Board Game::makeBoard() {
             break;
         }
       } else if (row_index == 1 || row_index == 6) {
-        board[row_index][column_index] = Position(
+        board_context.board[row_index][column_index] = Position(
             row_index, column_index, std::make_unique<Pawn>(current_colour));
       } else {
-        board[row_index][column_index] =
+        board_context.board[row_index][column_index] =
             Position(row_index, column_index, nullptr);
       }
     }
+    board_context.ptr_to_white_king_position = &board_context.board[0][4];
+    board_context.ptr_to_white_king_position = &board_context.board[0][4];
   }
-  return board;
+  return board_context;
 }
 
 std::string Game::to_string() {
-  if (this->board_ptr) {
+  if (this->board_context_ptr) {
     std::string result = std::string("+------------------------+\n");
     for (const auto& [rank, row_index] : rank_to_index) {
       result += std::string("|");
       for (const auto& [file, column_index] : file_to_index) {
-        if ((*board_ptr)[row_index][column_index].get_piece_ptr()) {
-          result += "\u200A" +
-                    (*board_ptr)[row_index][column_index]
-                        .get_piece_ptr()
-                        ->get_icon() +
-                    "\u200A";
+        Piece* piece_ptr =
+            (*board_context_ptr).board[row_index][column_index].get_piece_ptr();
+        if (piece_ptr) {
+          result += "\u200A" + piece_ptr->get_icon() + "\u200A";
         } else {
           result += std::string("\u200A") + std::string("\u200A") +
                     std::string("\u200A");
@@ -151,7 +151,7 @@ std::string request_and_execute_move(std::string player_name,
   std::string parse_info = parse_move_input(player_input, start_column,
                                             start_row, end_column, end_row);
 
-  if (!game.get_board_ptr()) {
+  if (!game.get_board_context_ptr()) {
     std::println("error: board pointer is null");
   }
 
@@ -161,8 +161,9 @@ std::string request_and_execute_move(std::string player_name,
                                     start_row, end_column, end_row, game);
   }
   // check that there's a piece at start_pos
-  auto moved_piece_ptr =
-      game.get_board_ptr()->at(start_row).at(start_column).get_piece_ptr();
+  auto moved_piece_ptr = game.get_board_context_ptr()
+                             ->board[start_row][start_column]
+                             .get_piece_ptr();
   if (!(moved_piece_ptr)) {
     parse_info = "Illegal input: no piece at start position";
     std::println("{}", parse_info);
@@ -185,9 +186,9 @@ std::string request_and_execute_move(std::string player_name,
     return request_and_execute_move(player_name, player_input, start_column,
                                     start_row, end_column, end_row, game);
   }
-
   auto captured_piece_ptr =
-      game.get_board_ptr()->at(end_row).at(end_column).get_piece_ptr();
+      game.get_board_context_ptr()->board[end_row][end_column].get_piece_ptr();
+
   if (captured_piece_ptr) {
     Colour end_colour = captured_piece_ptr->get_Colour();
     // there is a piece at end_pos
@@ -201,9 +202,10 @@ std::string request_and_execute_move(std::string player_name,
   }
   // try to perform the move
   parse_info = moved_piece_ptr->move(
-      *game.get_board_ptr(),
-      game.get_board_ptr()->at(start_row).at(start_column),
-      game.get_board_ptr()->at(end_row).at(end_column), game.get_move_count());
+      *game.get_board_context_ptr(),
+      game.get_board_context_ptr()->board[start_row][start_column],
+      game.get_board_context_ptr()->board[end_row][end_column],
+      game.get_move_count());
 
   if (parse_info.find("Illegal") != std::string::npos) {
     std::println("{}", parse_info);

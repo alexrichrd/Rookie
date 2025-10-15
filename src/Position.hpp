@@ -41,4 +41,10 @@ class Position {
   }
 };
 
+struct BoardContext {
+  std::array<std::array<Position, 8>, 8> board;
+  Position* ptr_to_white_king_position = nullptr;
+  Position* ptr_to_black_king_position = nullptr;
+};
+
 }  // namespace chess

@@ -35,17 +35,18 @@ class Game {
   Colour next_to_move = WHITE;
   Player player_1;
   Player player_2;
-  std::unique_ptr<Board> board_ptr;
+  std::unique_ptr<BoardContext> board_context_ptr;
   GameStatus status = ONGOING;
   std::vector<Move> moves;
 
-  static Board makeBoard();
+  static BoardContext make_board_context();
 
  public:
   Game(std::string name_1, std::string name_2)
       : player_1(WHITE, std::move(name_1)),
         player_2(BLACK, std::move(name_2)),
-        board_ptr(std::make_unique<Board>(makeBoard())) {};
+        board_context_ptr(
+            std::make_unique<BoardContext>(make_board_context())) {};
   Game(const Game&) = delete;
   Game& operator=(const Game&) = delete;
   Game(Game&&) noexcept = default;
@@ -63,7 +64,7 @@ class Game {
   }
   unsigned get_move_count() { return move_count; }
   std::string to_string();
-  Board* get_board_ptr() { return board_ptr.get(); }
+  BoardContext* get_board_context_ptr() { return board_context_ptr.get(); }
   void set_next_to_move(Colour colour) { this->next_to_move = colour; }
   Colour get_next_to_move() { return this->next_to_move; }
   static void play_game();
