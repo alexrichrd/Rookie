@@ -104,6 +104,8 @@ class Pawn : public Piece {
 
 namespace moveUtils {
 
+using namespace chess;
+
 bool valid_vertical_move(chess::BoardContext& board_context, unsigned start_row,
                          unsigned start_col, unsigned end_row,
                          unsigned end_col);

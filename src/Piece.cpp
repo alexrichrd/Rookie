@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <map>
 
+using namespace chess;
+using namespace moveUtils;
+
 bool moveUtils::valid_vertical_move(chess::BoardContext& board_context,
                                     unsigned start_row, unsigned start_col,
                                     unsigned end_row, unsigned end_col) {
@@ -77,8 +80,6 @@ bool moveUtils::valid_diagonal_move(chess::BoardContext& board_context,
   }
   return true;
 }
-
-using namespace chess;
 
 std::string chess::Rook::move(BoardContext& board_context, Position& start_pos,
                               Position& end_pos, unsigned /**/) {
